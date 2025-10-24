@@ -612,7 +612,6 @@ func (u *UnitOfWork) Begin() error {
 	if err != nil {
 		return fmt.Errorf("开始事务失败: %w", err)
 	}
-	fmt.Println("事务已成功开始")
 	u.tx = tx
 	return nil
 }
@@ -622,44 +621,35 @@ func (u *UnitOfWork) Commit() error {
 }
 
 func (u *UnitOfWork) Rollback() error {
-	err := u.tx.Rollback()
-	if err != nil {
-		fmt.Printf("事务回滚失败: %v\n", err)
-	} else {
-		fmt.Println("事务已成功回滚")
-	}
-	return err
+	return u.tx.Rollback()
 }
 func (u *UnitOfWork) GetTx() *Tx {
 	return u.tx
 }
 
-// 辅助函数
+// RunInTransaction executes a function within a database transaction.
+// If the function returns an error or panics, the transaction is rolled back.
+// Otherwise, the transaction is committed.
 func (u *UnitOfWork) RunInTransaction(fn func(IUnitOfWork) error) error {
 	if err := u.Begin(); err != nil {
-		fmt.Printf("开始事务失败: %v\n", err)
 		return err
 	}
 
 	defer func() {
 		if r := recover(); r != nil {
-			fmt.Printf("捕获到异常: %v, 正在回滚事务\n", r)
 			u.Rollback()
 			panic(r)
 		}
 	}()
 
 	if err := fn(u); err != nil {
-		fmt.Printf("事务执行出错: %v, 正在回滚事务\n", err)
 		rollbackErr := u.Rollback()
 		if rollbackErr != nil {
-			fmt.Printf("回滚事务失败: %v\n", rollbackErr)
 			return fmt.Errorf("原始错误: %v, 回滚失败: %w", err, rollbackErr)
 		}
 		return err
 	}
 
-	// fmt.Println("事务执行成功，正在提交")
 	return u.Commit()
 }
 
@@ -708,17 +698,7 @@ func (r *Repository[T]) UpdateFieldsByIdWithTx(id int64, fields map[string]inter
 		return err
 	}
 	if r.uow != nil {
-		fmt.Printf("事务更新SQL - 表:%s, SQL:%s, 参数:%v\n", r.table, sql, args)
-		result, err := r.uow.GetTx().Exec(sql, args...)
-		if err == nil {
-			affected, _ := result.RowsAffected()
-			fmt.Printf("事务更新结果 - 影响行数:%d\n", affected)
-			if affected == 0 {
-				fmt.Printf("警告: 更新操作未影响任何行\n")
-			}
-		} else {
-			fmt.Printf("事务更新失败 - 错误:%v\n", err)
-		}
+		_, err := r.uow.GetTx().Exec(sql, args...)
 		return err
 	} else {
 		_, err = r.db.Exec(sql, args...)

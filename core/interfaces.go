@@ -1,14 +1,45 @@
+// Package core provides a type-safe ORM framework for Go with LINQ-style query capabilities.
+//
+// This package implements the Repository pattern combined with LINQ-style queries,
+// offering a clean and expressive API for database operations while maintaining
+// compile-time type safety through Go generics.
+//
+// Key components:
+//   - Repository[T]: Generic repository with CRUD operations
+//   - Queryable[T]: LINQ-style query builder for database queries
+//   - Enumerable[T]: LINQ-style operations for in-memory collections
+//   - UnitOfWork: Transaction management
+//
+// Example usage:
+//
+//	type User struct {
+//	    ID   int64  `db:"id"`
+//	    Name string `db:"name"`
+//	    Age  int    `db:"age"`
+//	}
+//
+//	db := NewDBLogger(sqlxDB, logger)
+//	userRepo := NewRepository[User](db, "users")
+//
+//	// Query users
+//	users, _ := userRepo.Query().
+//	    Where(goqu.Ex{"age": goqu.Op{"gte": 18}}).
+//	    OrderByRaw("created_at DESC").
+//	    Limit(10).
+//	    ToList()
 package core
 
-// contrib/dao/base/interfaces.go
 import (
 	"context"
 
 	"github.com/doug-martin/goqu/v9"
 )
 
-// contrib/dao/base/interfaces.go
+// IReadRepository defines read-only operations for database queries.
+// It provides a Query method that returns a queryable interface for building
+// complex database queries using LINQ-style operations.
 type IReadRepository[T any] interface {
+	// Query returns a new queryable instance for building database queries.
 	Query() IQueryable[T]
 	// Where(condition goqu.Ex) IQueryable[T]
 	// OrderBy(cols ...string) IQueryable[T]

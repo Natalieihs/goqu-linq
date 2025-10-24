@@ -86,24 +86,6 @@ func (q *Queryable[T]) OrderByRaw(column string) IQueryable[T] {
 	} else {
 		q.query = q.query.Order(goqu.I(col).Asc())
 	}
-	// // 大小写不敏感地检查排序方向
-	// upperColumn := strings.ToUpper(column)
-	// if strings.HasSuffix(upperColumn, " DESC") {
-	// 	// 保留原始列名的大小写，只去掉排序方向
-	// 	col := column[:len(column)-5] // 去掉 " DESC" 或 " Desc" 等
-	// 	col = strings.TrimSpace(col)
-	// 	q.query = q.query.Order(goqu.I(col).Desc())
-	// } else if strings.HasSuffix(upperColumn, " ASC") {
-	// 	// 保留原始列名的大小写，只去掉排序方向
-	// 	col := column[:len(column)-4] // 去掉 " ASC" 或 " Asc" 等
-	// 	col = strings.TrimSpace(col)
-	// 	q.query = q.query.Order(goqu.I(col).Asc())
-	// } else {
-	// 	// 没有指定排序方向，默认升序
-	// 	q.query = q.query.Order(goqu.I(column).Asc())
-	// }
-	s, _, _ := q.query.ToSQL()
-	fmt.Printf("===========================q.query>%s \n", s)
 	return q
 }
 

@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/Natalieihs/goqu-linq/core"
 	"github.com/doug-martin/goqu/v9"
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/Natalieihs/goqu-linq/core"
 	"go.uber.org/zap"
 )
 
